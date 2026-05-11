@@ -19,12 +19,14 @@ The output is a tabbed dashboard with:
 
 ## Installation
 
-Clone into the framework's `agents/` directory and run setup:
+Clone into the framework's `agents/` directory and run the installer:
 
 ```bash
 git clone https://github.com/aurite-simulator/gen-report-agent agents/gen_report
-bash setup.sh
+bash agents/gen_report/install.sh
 ```
+
+`install.sh` installs dependencies into the shared virtualenv and appends the monthly cron entry to the model's `crontab` file (idempotent — safe to run multiple times).
 
 ## Running
 
