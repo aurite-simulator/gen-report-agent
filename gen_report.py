@@ -7,12 +7,12 @@ import re
 import sys
 from pathlib import Path
 
-REPORTS_DIR  = Path(__file__).parents[3] / "model_data" / "reports"
-RISK_DIR     = Path(__file__).parents[3] / "model_data" / "risk_analysis"
-UTIL_DIR     = Path(__file__).parents[3] / "model_data" / "utilization_analysis"
-UTIL_CSV_DIR = Path(__file__).parents[3] / "model_data" / "utilization"
-RISK_LOG     = Path(__file__).parents[3] / "model_data" / "risk_alerts.jsonl"
-OUTPUT_FILE  = Path(__file__).parents[3] / "model_data" / "report.html"
+REPORTS_DIR  = Path(__file__).parents[2] / "model_data" / "reports"
+RISK_DIR     = Path(__file__).parents[2] / "model_data" / "risk_analysis"
+UTIL_DIR     = Path(__file__).parents[2] / "model_data" / "utilization_analysis"
+UTIL_CSV_DIR = Path(__file__).parents[2] / "model_data" / "utilization"
+RISK_LOG     = Path(__file__).parents[2] / "model_data" / "risk_alerts.jsonl"
+OUTPUT_FILE  = Path(__file__).parents[2] / "model_data" / "report.html"
 
 REPORT_GROUPS = [
     ("Business Unit Summary", [
