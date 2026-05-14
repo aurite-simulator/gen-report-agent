@@ -1,10 +1,16 @@
 #!/usr/bin/env python3
 """Generate a self-contained HTML dashboard from simulation CSV reports."""
+import argparse
 import csv
 import json
 import math
+import os
 import re
+import shutil
+import subprocess
 import sys
+import tempfile
+from datetime import datetime, timezone
 from pathlib import Path
 
 REPORTS_DIR  = Path(__file__).parents[2] / "model_data" / "reports"
@@ -704,7 +710,31 @@ function showReport(sel,prefix){
 """
 
 
+def _publish(html_path: Path) -> None:
+    repo_url = os.environ.get("REPORT_REPO_URL")
+    if not repo_url:
+        print("error: --publish requires REPORT_REPO_URL env var", file=sys.stderr)
+        sys.exit(1)
+    with tempfile.TemporaryDirectory() as tmp:
+        subprocess.run(["git", "clone", "--depth=1", repo_url, tmp], check=True)
+        shutil.copy(html_path, Path(tmp) / "index.html")
+        git = ["git", "-C", tmp]
+        subprocess.run([*git, "add", "index.html"], check=True)
+        if subprocess.run([*git, "diff", "--cached", "--quiet"]).returncode == 0:
+            print("no changes to publish")
+            return
+        ts = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%SZ")
+        subprocess.run([*git, "commit", "-m", f"Update report {ts}"], check=True)
+        subprocess.run([*git, "push"], check=True)
+        print(f"published → {repo_url}")
+
+
 def main() -> None:
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("--publish", action="store_true",
+                    help="After writing report.html, push it as index.html to REPORT_REPO_URL")
+    args = ap.parse_args()
+
     if not REPORTS_DIR.exists():
         print(f"error: reports directory not found: {REPORTS_DIR}", file=sys.stderr)
         sys.exit(1)
@@ -753,6 +783,9 @@ def main() -> None:
     OUTPUT_FILE.parent.mkdir(parents=True, exist_ok=True)
     OUTPUT_FILE.write_text(html, encoding="utf-8")
     print(f"wrote → {OUTPUT_FILE}")
+
+    if args.publish:
+        _publish(OUTPUT_FILE)
 
 
 if __name__ == "__main__":
