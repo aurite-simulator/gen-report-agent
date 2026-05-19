@@ -4,7 +4,7 @@ Generates a self-contained HTML dashboard from all simulation outputs — monthl
 
 ## What It Does
 
-Fires on the 1st of each month (at 2am, after reports and utilization have run at midnight). For each run it:
+Fires on the 1st of each month at 07:00, after the model's monthly reports cron has run at 06:00. For each run it:
 
 1. Scans `model_data/reports/` for monthly CSV report directories
 2. Reads `model_data/risk_alerts.jsonl` and `model_data/utilization/` CSVs for summary charts
