@@ -20,8 +20,8 @@ if [ -z "$CRONTAB_FILE" ]; then
 fi
 echo "[install] found crontab: $CRONTAB_FILE"
 
-CRON_ENTRY='0 2 1 * *     venv/bin/python3 agents/gen_report/gen_report.py'
-CRON_COMMENT='# Monthly: regenerate HTML dashboard (after reports and utilization at midnight)'
+CRON_ENTRY='0 7 1 * *     venv/bin/python3 agents/gen_report/gen_report.py'
+CRON_COMMENT='# Monthly: regenerate HTML dashboard (after reports run at 06:00 on day 1)'
 
 if grep -qF "gen_report/gen_report.py" "$CRONTAB_FILE"; then
     echo "[install] crontab entry already present — skipping"

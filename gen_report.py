@@ -26,6 +26,9 @@ REPORT_GROUPS = [
         ("bu_revenue_ytd",                       "BU Revenue — Year to Date"),
         ("bu_revenue_forecast_remainder",        "BU Revenue — Forecast Remainder"),
         ("bu_profit_forecast_eoy",               "BU Profit Forecast — End of Year"),
+        ("bu_pl_monthly",                        "BU P&L — Current Month"),
+        ("realization_by_bu",                    "Realization Rate by BU"),
+        ("dso_by_bu",                            "DSO by BU"),
     ]),
     ("Fixed Price Projects", [
         ("fixed_price_contract_values",          "Contract Values"),
@@ -38,14 +41,26 @@ REPORT_GROUPS = [
         ("project_status",                       "Project Status"),
         ("project_hours_expenses_to_date",       "Hours & Expenses to Date"),
         ("project_hours_forecast",               "Hours Forecast"),
+        ("fully_loaded_margin",                  "Fully Loaded Margin by Project"),
+    ]),
+    ("Accounts Receivable", [
+        ("ar_aging",                             "AR Aging by Client"),
+        ("writeoffs_summary",                    "Write-offs — Year to Date"),
+    ]),
+    ("Clients", [
+        ("client_concentration",                 "Client Concentration"),
     ]),
     ("Staff Activity", [
         ("consultant_projects_ytd",              "Consultant Projects — Year to Date"),
     ]),
 ]
 
-_CURRENCY_KEYWORDS = ("revenue", "cost", "profit", "value", "amount", "expense", "labor", "salary")
+_CURRENCY_KEYWORDS = ("revenue", "cost", "profit", "value", "amount", "expense",
+                      "labor", "salary", "margin", "overhead", "ebitda", "writeoff")
 _HOURS_KEYWORDS    = ("hours",)
+# AR aging bucket columns and AR balance columns — currency, but names don't match keywords.
+_CURRENCY_COLUMNS  = frozenset({"current", "30_60", "60_90", "90_120", "120_plus",
+                                "total_ar", "open_ar", "open_ar_snapshot"})
 _MONTH_ABBR = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
 CHART_COLORS = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6"]
 
@@ -64,9 +79,13 @@ def _fmt(col: str, val: str) -> str:
         return f"{num:.1f}%"
     if col_l == "slip_factor":
         return f"{num:.3f}×"
+    if col_l == "dso_days":
+        return f"{num:,.1f} days"
+    if col_l.endswith("_pct") or col_l.endswith("_rate") or col_l.startswith("share_"):
+        return f"{num * 100:.2f}%"
     if any(kw in col_l for kw in _HOURS_KEYWORDS):
         return f"{num:,.1f}"
-    if any(kw in col_l for kw in _CURRENCY_KEYWORDS):
+    if col_l in _CURRENCY_COLUMNS or any(kw in col_l for kw in _CURRENCY_KEYWORDS):
         return f"${num:,.2f}"
     if num == int(num):
         return str(int(num))
@@ -284,7 +303,8 @@ def _md_to_html(text: str) -> str:
         elif re.match(r'^\d+\.\s', s):
             if in_ul: out.append('</ul>'); in_ul = False
             if not in_ol: out.append('<ol>'); in_ol = True
-            out.append(f'<li>{_inline_md(re.sub(r"^\d+\.\s+", "", s))}</li>')
+            item = re.sub(r'^\d+\.\s+', '', s)
+            out.append(f'<li>{_inline_md(item)}</li>')
         elif not s:
             close_lists()
         else:
